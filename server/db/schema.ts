@@ -49,6 +49,7 @@ export const quizSessions = pgTable('quiz_sessions', {
 	maxBudget: integer('max_budget').notNull(),
 	minBudget: integer('min_budget'),
 	maxGuests: integer('max_guests').notNull(),
+	minRating: doublePrecision('min_rating'),
 	preferredAmenitySlugs: jsonb('preferred_amenity_slugs').$type<string[]>().notNull(),
 	preferredVibeSlugs: jsonb('preferred_vibe_slugs').$type<string[]>().notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
