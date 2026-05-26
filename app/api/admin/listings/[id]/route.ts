@@ -28,6 +28,13 @@ export async function PATCH(
       .where(eq(listings.id, listingId))
       .returning();
 
+	  if (body.status === 'on_hold') {
+      await db
+        .update(recommendationListings)
+        .set({ isInvalidated: true })
+        .where(eq(recommendationListings.listingId, listingId));
+    }
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('Admin update listing error:', error);
