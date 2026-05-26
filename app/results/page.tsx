@@ -141,7 +141,17 @@ export default function ResultsPage() {
 	.then((data) => {
 		if (data.error) throw new Error(data.error);
 		setSession(data.session);
-		setResults(data.results);
+		const sortedResults = [...data.results].sort((a, b) => {
+			const aHold = !a.listing || a.listing.status === 'on_hold' || a.isInvalidated;
+			const bHold = !b.listing || b.listing.status === 'on_hold' || b.isInvalidated;
+			
+			if (aHold && !bHold) return 1;
+			if (!aHold && bHold) return -1;
+			
+			return a.rank - b.rank;
+      });
+
+		setResults(sortedResults);
 	})
 	.catch((err) => {
 		if (isInitialLoad) setError(err.message);
