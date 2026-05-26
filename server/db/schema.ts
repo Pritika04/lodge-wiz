@@ -14,7 +14,7 @@ export const listings = pgTable('listings', {
 	maxGuests: integer('max_guests').notNull(),
 	ratings: doublePrecision('ratings').notNull(),
 	status: statusEnum('status').default('active').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }); 
 
 export const amenities = pgTable('amenities', {
@@ -53,7 +53,7 @@ export const quizSessions = pgTable('quiz_sessions', {
 	minRating: doublePrecision('min_rating'),
 	preferredAmenitySlugs: jsonb('preferred_amenity_slugs').$type<string[]>().notNull(),
 	preferredVibeSlugs: jsonb('preferred_vibe_slugs').$type<string[]>().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const recommendationListings = pgTable('recommendation_listings', {
@@ -66,7 +66,7 @@ export const recommendationListings = pgTable('recommendation_listings', {
 	ratingAtMatch: doublePrecision('rating_at_match').notNull(),
 	rank: integer('rank').notNull(), 
 	isInvalidated: boolean('is_invalidated').default(false).notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const listingsRelations = relations(listings, ({ many }) => ({
