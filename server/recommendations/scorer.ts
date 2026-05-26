@@ -164,7 +164,9 @@ export function scoreListings(
 	preferences: UserPreferences,
 	listings: ListingWithRelations[]
 ): ScoredListing[] {
-	const scored = listings.map((listing) => {
+	const locationFiltered = listings.filter((loc) => loc.location === preferences.location);
+
+	const scored = locationFiltered.map((listing) => {
 		const breakdown = computeScoreBreakdown(listing, preferences);
 		const totalScore = computeTotalScore(breakdown);
 		const matchExplanation = generateExplanation(
