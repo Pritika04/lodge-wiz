@@ -138,7 +138,7 @@ function generateExplanation(
 	}
 
 	if (breakdown.guests === 1) {
-		highlights.push(`allows max $${listing.maxGuests} guests`);
+		highlights.push(`allows max ${listing.maxGuests} guests`);
 	}
 	
 	if (breakdown.amenities === 1 && preferences.preferredAmenitySlugs.length > 0) {

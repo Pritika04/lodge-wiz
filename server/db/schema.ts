@@ -1,4 +1,5 @@
 import { pgEnum, pgTable, serial, text, integer, doublePrecision, boolean, timestamp, uuid, jsonb, primaryKey } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const propertyTypeEnum = pgEnum('property_types', ['house', 'apartment', 'guesthouse', 'hotel']);
 export const statusEnum = pgEnum('listing_status', ['active', 'on_hold', 'archived']);
@@ -67,3 +68,36 @@ export const recommendationListings = pgTable('recommendation_listings', {
 	isInvalidated: boolean('is_invalidated').default(false).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const listingsRelations = relations(listings, ({ many }) => ({
+	listingAmenities: many(listingAmenities),
+	listingVibes:     many(listingVibes),
+	recommendations:  many(recommendationListings),
+}));
+
+export const amenitiesRelations = relations(amenities, ({ many }) => ({
+	listingAmenities: many(listingAmenities),
+}));
+
+export const vibesRelations = relations(vibes, ({ many }) => ({
+	listingVibes: many(listingVibes),
+}));
+
+export const listingAmenitiesRelations = relations(listingAmenities, ({ one }) => ({
+	listing: one(listings, { fields: [listingAmenities.listingId], references: [listings.id] }),
+	amenity: one(amenities, { fields: [listingAmenities.amenityId], references: [amenities.id] }),
+}));
+
+export const listingVibesRelations = relations(listingVibes, ({ one }) => ({
+	listing: one(listings, { fields: [listingVibes.listingId], references: [listings.id] }),
+	vibe:    one(vibes,    { fields: [listingVibes.vibeId],    references: [vibes.id] }),
+}));
+
+export const quizSessionsRelations = relations(quizSessions, ({ many }) => ({
+	recommendationListings: many(recommendationListings),
+}));
+
+export const recommendationListingsRelations = relations(recommendationListings, ({ one }) => ({
+	session: one(quizSessions, { fields: [recommendationListings.sessionId], references: [quizSessions.id] }),
+	listing: one(listings,     { fields: [recommendationListings.listingId], references: [listings.id] }),
+}));
