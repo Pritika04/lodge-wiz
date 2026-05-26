@@ -1,10 +1,9 @@
 import { db } from '@/server/db/index';
-import { listings, listingAmenities, listingVibes, quizSessions, recommendationListings } from '@/server/db/schema';
+import { listings, quizSessions, recommendationListings } from '@/server/db/schema';
 import { ListingWithRelations, UserPreferences } from '@/server/recommendations/types';
 import { eq } from 'drizzle-orm';
 import { scoreListings } from '@/server/recommendations/scorer';
 import { NextRequest, NextResponse } from 'next/server';
-
 
 export async function POST(req: NextRequest) {
 	try {
