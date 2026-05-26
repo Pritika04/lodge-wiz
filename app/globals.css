@@ -465,11 +465,39 @@ body {
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
+
+.res-subtitle-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .res-subtitle {
   font-size: 0.9rem;
   color: var(--text-secondary);
   margin-top: 0.4rem;
   font-weight: 500;
+}
+
+.res-live-indicator {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.live-dot {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* List */

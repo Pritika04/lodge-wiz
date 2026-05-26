@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Amenity  { slug: string; label: string; }
 interface Vibe     { slug: string; label: string; }
@@ -132,20 +132,40 @@ export default function ResultsPage() {
   const [session,  setSession]  = useState<Session | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
-
+  
+  const fetchUpdates = useCallback((isInitialLoad = false) => {
+	if (!sessionId) return;
+	
+	return fetch(`/api/recommendations/${sessionId}`)
+	.then((r) => r.json())
+	.then((data) => {
+		if (data.error) throw new Error(data.error);
+		setSession(data.session);
+		setResults(data.results);
+	})
+	.catch((err) => {
+		if (isInitialLoad) setError(err.message);
+		console.error('Background update failed:', err);
+	})
+	.finally(() => {
+		if (isInitialLoad) setLoading(false);
+	});
+  }, [sessionId]);
+  
   useEffect(() => {
-    if (!sessionId) { router.push('/'); return; }
-
-    fetch(`/api/recommendations/${sessionId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setSession(data.session);
-        setResults(data.results);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [sessionId, router]);
+	if (!sessionId) { router.push('/'); return; }
+	fetchUpdates(true);
+  }, [sessionId, router, fetchUpdates]);
+  
+  useEffect(() => {
+	if (!sessionId || loading || error) return;
+	
+	const intervalId = setInterval(() => {
+		fetchUpdates(false);
+	}, 60000);
+	
+	return () => clearInterval(intervalId);
+  }, [sessionId, loading, error, fetchUpdates]);
 
   if (loading) {
     return (
@@ -194,13 +214,19 @@ export default function ResultsPage() {
       <div className="blob blob-1" /><div className="blob blob-2" /><div className="blob blob-3" />
 
       <div className="res-container">
-        {/* Header */}
         <div className="res-header">
           <h1 className="res-title">🔮 Your perfect stays</h1>
           {session && (
-            <p className="res-subtitle">
-              {results.length} match{results.length !== 1 ? 'es' : ''} in {session.location} · up to ${session.maxBudget}/night
-            </p>
+			<div className="res-subtitle-group">
+				<p className="res-subtitle">
+				{results.length} match{results.length !== 1 ? 'es' : ''} in {session.location} · up to ${session.maxBudget}/night
+				</p>
+
+				<p className="res-live-indicator">
+					<span className="live-dot"/>
+					Live pricing & availability automatically updated every minute!
+              	</p>
+			</div>
           )}
         </div>
 
