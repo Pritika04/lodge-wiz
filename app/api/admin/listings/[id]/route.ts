@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db/index';
-import { listings, recommendationListings } from '@/server/db/schema';
+import { listings, listingAmenities, listingVibes, recommendationListings } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-// PATCH — update listing fields or toggle on_hold
+// PATCH — update listing, replace amenities/vibes, handle on_hold invalidation
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,11 +28,39 @@ export async function PATCH(
       .where(eq(listings.id, listingId))
       .returning();
 
-	  if (body.status === 'on_hold') {
+    if (body.status === 'on_hold') {
       await db
         .update(recommendationListings)
         .set({ isInvalidated: true })
         .where(eq(recommendationListings.listingId, listingId));
+    }
+
+    if (body.amenitySlugs !== undefined) {
+      await db.delete(listingAmenities).where(eq(listingAmenities.listingId, listingId));
+      if (body.amenitySlugs.length > 0) {
+        const amenityRows = await db.query.amenities.findMany();
+        const amenityMap = Object.fromEntries(amenityRows.map((a) => [a.slug, a.id]));
+        await db.insert(listingAmenities).values(
+          body.amenitySlugs.map((slug: string) => ({
+            listingId,
+            amenityId: amenityMap[slug],
+          }))
+        );
+      }
+    }
+
+    if (body.vibeSlugs !== undefined) {
+      await db.delete(listingVibes).where(eq(listingVibes.listingId, listingId));
+      if (body.vibeSlugs.length > 0) {
+        const vibeRows = await db.query.vibes.findMany();
+        const vibeMap = Object.fromEntries(vibeRows.map((v) => [v.slug, v.id]));
+        await db.insert(listingVibes).values(
+          body.vibeSlugs.map((slug: string) => ({
+            listingId,
+            vibeId: vibeMap[slug],
+          }))
+        );
+      }
     }
 
     return NextResponse.json(updated);
@@ -42,19 +70,14 @@ export async function PATCH(
   }
 }
 
-// DELETE — remove a listing entirely
+// DELETE — remove listing (cascades to junction tables automatically)
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const listingId = parseInt(id);
-
-    await db
-      .delete(listings)
-      .where(eq(listings.id, listingId));
-
+    await db.delete(listings).where(eq(listings.id, parseInt(id)));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Admin delete listing error:', error);
