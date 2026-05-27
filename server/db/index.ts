@@ -11,7 +11,7 @@ if (!connectionString) {
 	throw new Error("DATABASE_URL_UNPOOLED is not set");
 }
 
-console.log("Connecting to:", connectionString.split(":")[2].split("@")[1]);
+// console.log("Connecting to:", connectionString.split(":")[2].split("@")[1]);
 
 const client = postgres(connectionString, {
 	max: 1,

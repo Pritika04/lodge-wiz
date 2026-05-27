@@ -28,7 +28,7 @@ DATABASE_URL_UNPOOLED=your_supabase_session_pooler_url
 
 ## Stack
 
-- **React + Next.js 15** (App Router)
+- **React + Next.js** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
 - **Drizzle ORM**
@@ -114,7 +114,7 @@ The architecture is ready for it. `generateExplanation` in `scorer.ts` would be 
 Questions could respond to prior answers - if a user selects a city with only apartments and lofts, the property type step would filter accordingly. The step-by-step wizard architecture already supports this.
 
 **3. User accounts and recommendation history**
-Right now sessions are anonymous. Adding auth would mean associating `quiz_sessions` with a `user_id` (the column is already nullable in the schema for this reason). Users could then see their full search history and we could start learning from their behavior.
+Right now sessions are anonymous. Adding auth would mean associating `quiz_sessions` with a `user_id`. Users could then see their full search history and we could start learning from their behavior.
 
 **4. Scoring weight optimization**
 The current weights are intuition-based. With real booking data, I'd analyze which attributes correlate most strongly with a user clicking through or booking after seeing a result, and adjust weights accordingly. The weight constants are isolated in `constants.ts` — updating them is a one-line change.
@@ -127,3 +127,6 @@ If a user bookmarked a result and the price later dropped into their budget, the
 
 **7. Amenity and vibe weights**
 Currently all amenities are weighted equally. In reality, WiFi is a near-universal requirement while a gym is a nice-to-have. The quiz could let users mark amenities as "must have" vs "nice to have," and the scorer could apply a multiplier accordingly.
+
+**8. More attributes for Airbnb listings**
+Currently, I only display a limited number of attributes for Airbnb listings. However, getting/storing/display images, videos, and user reviews would be the next natural step. 
