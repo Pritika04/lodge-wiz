@@ -47,10 +47,10 @@ I assumed guests searching for listings. If the primary user is a host managing 
 Right now each quiz submission is anonymous and stateless. If users have accounts, we could learn from past searches and improve recommendations over time. I'd want to know if auth is on the roadmap before finalizing the session/recommendation schema.
 
 **3. What does "on hold" mean operationally?**
-I interpreted it as temporarily unavailable — the listing still exists in history but shouldn't appear in new results. I'd want to confirm whether on-hold listings should be completely hidden from past recommendation views, or just flagged as unavailable (I chose the latter).
+I interpreted it as temporarily unavailable - the listing still exists in history but shouldn't appear in new results. I'd want to confirm whether on-hold listings should be completely hidden from past recommendation views, or just flagged as unavailable (I chose the latter).
 
 **4. How should scoring weights be determined?**
-I hardcoded weights based on intuition (location and budget at 25% each, guests at 20%, etc.). In a real product, these would ideally be informed by data — what attributes correlate most with a user booking after viewing a result? I'd want to run that analysis before locking in weights. Or perhaps even assign weights
+I hardcoded weights based on intuition (location and budget at 25% each, guests at 20%, etc.). In a real product, these would ideally be informed by data - what attributes correlate most with a user booking after viewing a result? I'd want to run that analysis before locking in weights. Or perhaps even assign weights
 dynamically after asking the users what's most important to them. 
 
 **5. Should the quiz be adaptive?**
@@ -76,7 +76,7 @@ A listing at $80 on a $150 budget scores higher than one at $145 - better value 
 Once a recommendation is saved, I don't update it when listing data changes. Instead, I snapshot the attributes that affected the score (`priceAtMatch`, `ratingAtMatch`) at match time. If the current price differs from the match price, the results page surfaces a "price changed" warning. This makes the historical record honest without duplicating the entire listing. The only exception to this is the isInvalidated field that gets updated when a listing that's been recommended goes on_hold, as required by the spec. 
 
 **A quiz submission produces exactly one recommendation set.**
-There's no concept of re-running the same preferences against new listings. If a user wants fresh results, they retake the quiz. Each submission gets a UUID-based URL (`/results?sessionId=...`) that acts as a shareable permalink — no auth required.
+There's no concept of re-running the same preferences against new listings. If a user wants fresh results, they retake the quiz. Each submission gets a UUID-based URL (`/results?sessionId=...`) that acts as a shareable permalink - no auth required.
 
 **Amenities and vibes use separate junction tables.**
 Rather than storing them as arrays or JSONB on the listings row, I used `listing_amenities` and `listing_vibes` junction tables. This makes scoring clean (set intersection via joins), keeps the schema normalized, and makes it trivial to add new amenities or vibes without a migration.
@@ -92,16 +92,16 @@ I assumed the system will scale across cloud regions (Vercel Edge, AWS nodes). T
 ## Tradeoffs I Made
 
 **Deterministic scorer over LLM**
-The match explanation (`"87% match — great value at $120/night, has all your must-have amenities"`) is generated deterministically from the score breakdown rather than via an LLM call. This keeps the scorer fast, free, testable, and always available. The `generateExplanation` function in `scorer.ts` is a single-function swap if LLM explanations are wanted — it would receive the same breakdown object and return richer prose. The main reason being that if we used LLMs to score/rate listings, when we have 1M+ listings, for each quiz, we'd have that 1M+ calls to the LLM, which is expensive and inefficient. Instead of that, I would opt for using LLMs to generate the match explanation because we only need that for the top K results that we're displaying. 
+The match explanation (`"87% match — great value at $120/night, has all your must-have amenities"`) is generated deterministically from the score breakdown rather than via an LLM call. This keeps the scorer fast, free, testable, and always available. The `generateExplanation` function in `scorer.ts` is a single-function swap if LLM explanations are wanted - it would receive the same breakdown object and return richer prose. The main reason being that if we used LLMs to score/rate listings, when we have 1M+ listings, for each quiz, we'd have that 1M+ calls to the LLM, which is expensive and inefficient. Instead of that, I would opt for using LLMs to generate the match explanation because we only need that for the top K results that we're displaying. 
 
 **Eager scoring over lazy scoring**
-I score all listings at submission time rather than on-demand when the results page loads. This means results are fast to display (no scoring delay on page load) and the historical record is a true snapshot. The tradeoff is that new listings added after submission won't appear in those results — which I think is the right behavior for a recommendation (it's a record of what matched at that moment).
+I score all listings at submission time rather than on-demand when the results page loads. This means results are fast to display (no scoring delay on page load) and the historical record is a true snapshot. The tradeoff is that new listings added after submission won't appear in those results - which I think is the right behavior for a recommendation (it's a record of what matched at that moment).
 
 **Session pooler over direct Postgres connection**
 Supabase's direct connection requires IPv6, which isn't universally supported. I used the session pooler (port 5432) for migrations and the transaction pooler (port 6543) for the app. This adds a small layer of indirection but makes the app work on any network.
 
 **Inline styles for the admin page**
-The admin UI uses inline style objects rather than Tailwind or a CSS file. This keeps it self-contained and fast to write — the spec explicitly said the admin can be simple. The quiz and results UI use a proper CSS design system.
+The admin UI uses inline style objects rather than Tailwind or a CSS file. This keeps it self-contained and fast to write - the spec explicitly said the admin can be simple. The quiz and results UI use a proper CSS design system.
 
 ---
 
@@ -117,7 +117,7 @@ Questions could respond to prior answers - if a user selects a city with only ap
 Right now sessions are anonymous. Adding auth would mean associating `quiz_sessions` with a `user_id`. Users could then see their full search history and we could start learning from their behavior.
 
 **4. Scoring weight optimization**
-The current weights are intuition-based. With real booking data, I'd analyze which attributes correlate most strongly with a user clicking through or booking after seeing a result, and adjust weights accordingly. The weight constants are isolated in `constants.ts` — updating them is a one-line change.
+The current weights are intuition-based. With real booking data, I'd analyze which attributes correlate most strongly with a user clicking through or booking after seeing a result, and adjust weights accordingly. The weight constants are isolated in `constants.ts` - updating them is a one-line change.
 
 **5. Pre-filtering at scale**
 At thousands of listings, scoring everything in memory becomes expensive. The natural next step is a two-phase approach: a SQL pre-filter that eliminates hard mismatches (wrong city, over budget, too few guests), followed by the TypeScript scorer running on the reduced set.
@@ -130,3 +130,6 @@ Currently all amenities are weighted equally. In reality, WiFi is a near-univers
 
 **8. More attributes for Airbnb listings**
 Currently, I only display a limited number of attributes for Airbnb listings. However, getting/storing/display images, videos, and user reviews would be the next natural step. 
+
+**9. Database indexing**
+Right now, since the number of data points I have in my tables is quite small and given the time constraints, indexing isn't required. However, as the data scales and we get 100k+ rows in our listing table, to help improve the speed of queries, it would make sense to have indexes set up. For example, for the joins or the where clauses or even the columns with the most number of unique items. 
