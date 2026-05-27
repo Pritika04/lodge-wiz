@@ -15,3 +15,7 @@ export const TOP_K_RESULTS = 5;
 // Minimum score a listing must have to appear in results
 // Prevents completely irrelevant listings from showing up
 export const MINIMUM_SCORE_THRESHOLD = 10;
+
+// A +/- threshold around the user's max budget to show 
+// great listings slightly above budget and not show any way over budget
+export const BUDGET_PERCENT_THRESHOLD = 1.15

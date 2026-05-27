@@ -1,4 +1,4 @@
-import { SCORING_WEIGHTS, TOP_K_RESULTS, MINIMUM_SCORE_THRESHOLD } from "./constants";
+import { SCORING_WEIGHTS, TOP_K_RESULTS, MINIMUM_SCORE_THRESHOLD, BUDGET_PERCENT_THRESHOLD } from "./constants";
 import type { UserPreferences, ListingWithRelations, ScoredListing, ScoreBreakdown } from "./types";
 
 function scoreLocation(
@@ -166,7 +166,9 @@ export function scoreListings(
 ): ScoredListing[] {
 	const locationFiltered = listings.filter((loc) => loc.location === preferences.location);
 
-	const scored = locationFiltered.map((listing) => {
+	const budgetFiltered = locationFiltered.filter((loc) => loc.pricePerNight <= preferences.maxBudget * BUDGET_PERCENT_THRESHOLD);
+
+	const scored = budgetFiltered.map((listing) => {
 		const breakdown = computeScoreBreakdown(listing, preferences);
 		const totalScore = computeTotalScore(breakdown);
 		const matchExplanation = generateExplanation(
