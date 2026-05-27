@@ -132,4 +132,4 @@ Currently all amenities are weighted equally. In reality, WiFi is a near-univers
 Currently, I only display a limited number of attributes for Airbnb listings. However, getting/storing/display images, videos, and user reviews would be the next natural step. 
 
 **9. Database indexing**
-Right now, since the number of data points I have in my tables is quite small and given the time constraints, indexing isn't required. However, as the data scales and we get 100k+ rows in our listing table, to help improve the speed of queries, it would make sense to have indexes set up. For example, for the joins or the where clauses or even the columns with the most number of unique items. 
+Right now, since the number of data points I have in my tables is quite small and given the time constraints, indexing isn't required. However, as the data scales and we get 100k+ rows in our listing table, to help improve the speed of queries, it would make sense to have indexes set up. For example, for the joins or the where clauses or even the columns with the most number of unique items.
